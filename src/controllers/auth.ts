@@ -7,6 +7,7 @@ import { BadRequestsException } from "../exceptions/bad-requests"
 import { ErrorCode } from "../exceptions/root"
 import { UnprocessableEntity } from "../exceptions/validation"
 import { SignupSchema } from "../schema/users"
+import { NotFoundException } from "../exceptions/not-found"
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -15,7 +16,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
 
         let user = await prismaClient.user.findFirst({ where: { email }})
         if (user) {
-            next(new BadRequestsException('User already exists.', ErrorCode.USER_ALREADY_EXISTS))
+            new BadRequestsException('User already exists.', ErrorCode.USER_ALREADY_EXISTS)
         }
     
         user = await prismaClient.user.create({
@@ -38,11 +39,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
     let user = await prismaClient.user.findFirst({ where: { email }})
     if (!user) {
-        throw Error('User does not exist.')
+        throw new NotFoundException('User not found.', ErrorCode.USER_NOT_FOUND)
     }
 
     if (!compareSync(password, user.password)) {
-        throw Error('Incorrect password.')
+        throw new BadRequestsException('Incorrect password', ErrorCode.INCORRECT_PASSWORD)
     }
 
     const token = jwt.sign({
@@ -53,3 +54,4 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
     res.json({user, token})
 }
+

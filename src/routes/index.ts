@@ -1,6 +1,6 @@
 import { Router } from "express"
 import authRoutes from "./auth"
-import productsRoutes from "./routes"
+import productsRoutes from "./products"
 
 const rootRouter: Router = Router()
 

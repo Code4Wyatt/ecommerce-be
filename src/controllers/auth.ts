@@ -8,6 +8,7 @@ import { ErrorCode } from "../exceptions/root"
 import { UnprocessableEntity } from "../exceptions/validation"
 import { SignupSchema } from "../schema/users"
 import { NotFoundException } from "../exceptions/not-found"
+import { User } from "@prisma/client"
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -31,7 +32,6 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     } catch (error: any) {
         next(new UnprocessableEntity(error?.issues, 'Unprocessable entity', ErrorCode.UNPROCESSABLE_ENTITY))
     }
-
 }
 
 export const login = async (req: Request, res: Response, next: NextFunction) => {
@@ -50,8 +50,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         userId: user.id
     }, JWT_SECRET)
 
-    
-
     res.json({user, token})
+}
+
+export const me = async (req: Request, res: Response, next: NextFunction) => {
+
+    res.json(req.user)
 }
 

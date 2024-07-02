@@ -27,7 +27,24 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  addresses Address[]
+
   @@map("users")
+}
+
+model Address {
+  id Int @id @default(autoincrement())
+  lineOne String
+  lineTwo String
+  city String
+  country String
+  postCode String
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("addresses")
 }
 
 model Product {

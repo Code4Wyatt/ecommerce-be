@@ -7,7 +7,7 @@ import { addAddress, deleteAddress, listAddress, updateUser } from "../controlle
 const usersRoutes: Router = Router()
 
 usersRoutes.post('/address', [authMiddleware], errorHandler(addAddress))
-usersRoutes.delete('/address/:id', [authMiddleware], errorHandler(deleteAddress))
+usersRoutes.delete('/address/:id', [authMiddleware, adminMiddleware], errorHandler(deleteAddress))
 usersRoutes.get('/address', [authMiddleware], errorHandler(listAddress))
 usersRoutes.put('/', [authMiddleware], errorHandler(updateUser))
 

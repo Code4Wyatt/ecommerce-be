@@ -6,7 +6,7 @@ import { cancelOrder, createOrder, getOrderById, listOrders } from "../controlle
 const ordersRoutes: Router = Router()
 
 ordersRoutes.post('/', [authMiddleware], errorHandler(createOrder))
-ordersRoutes.put('/', [authMiddleware], errorHandler(listOrders))
+ordersRoutes.get('/', [authMiddleware], errorHandler(listOrders))
 ordersRoutes.delete('/:id/cancel', [authMiddleware], errorHandler(cancelOrder))
 ordersRoutes.get('/:id', [authMiddleware], errorHandler(getOrderById))
 

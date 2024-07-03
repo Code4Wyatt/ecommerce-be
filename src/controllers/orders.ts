@@ -79,7 +79,7 @@ export const cancelOrder = async (req: Request, res: Response, next: NextFunctio
         const order = await prismaClient.$transaction(async (tx) => {
             const existingOrder = await tx.order.findUnique({
                 where: {
-                    id: +req.params.id
+                    id: orderId
                 }
             })
 
@@ -93,7 +93,7 @@ export const cancelOrder = async (req: Request, res: Response, next: NextFunctio
 
             const updatedOrder = await tx.order.update({
                 where: {
-                    id: +req.params.id
+                    id: orderId
                 },
                 data: {
                     status: 'CANCELLED'
@@ -133,4 +133,87 @@ export const getOrderById = async (req: Request, res: Response) => {
     } catch (error) {
         throw new NotFoundException('Order not found', ErrorCode.ORDER_NOT_FOUND)
     }
+}
+
+export const listAllOrders = async (req: Request, res: Response) => {
+    let whereClause = {}
+    const status = req.params.status
+    const skip = req.query.skip ? parseInt(req.query.skip as string, 10) : 0;
+
+    if (status) {
+        whereClause = {
+            status
+        }
+    }
+
+    const orders = await prismaClient.order.findMany({
+        where: whereClause,
+        skip: isNaN(skip) ? 0 : skip,
+        take: 5
+    })
+
+    res.json(orders)
+}
+
+export const changeOrderStatus = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const orderId = +req.params.id
+        const newStatus = req.body.status
+
+        const order = await prismaClient.$transaction(async (tx) => {
+            const updatedOrder = await tx.order.update({
+                where: {
+                    id: orderId
+                },
+                data: {
+                    status: newStatus
+                }
+            })
+
+            await tx.orderEvent.create({
+                data: {
+                    orderId: updatedOrder.id,
+                    status: newStatus
+                }
+            })
+
+            return updatedOrder
+        })
+
+        res.json(order)
+    } catch (error) {
+        if (error instanceof Error) {
+            if ((error as any).code === 'P2025') { // Prisma error code for "Record not found"
+                next(new NotFoundException('Order not found', ErrorCode.ORDER_NOT_FOUND))
+            } else {
+                next(error)
+            }
+        } else {
+            next(new Error('An unknown error occurred'))
+        }
+    }
+}
+
+export const listUserOrders = async (req: Request, res: Response, next: NextFunction) => {
+    const skip = req.query.skip ? parseInt(req.query.skip as string, 10) : 0;
+    let whereClause: any = {
+        userId: +req.params.id
+    }
+    
+    const status = req.params.status
+
+    if (status) {
+        whereClause = {
+            ...whereClause,
+            status
+        }
+    }
+
+    const orders = await prismaClient.order.findMany({
+        where: whereClause,
+        skip: isNaN(skip) ? 0 : skip,
+        take: 5
+    })
+
+    res.json(orders)
 }
